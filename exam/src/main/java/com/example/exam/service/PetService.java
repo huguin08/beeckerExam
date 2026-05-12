@@ -4,26 +4,36 @@ import com.example.exam.client.PetClient;
 import com.example.exam.model.PetResponse;
 import com.example.exam.model.PetRequest;
 import com.example.exam.model.TransactionResponse;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class PetService {
 
     private final PetClient petClient;
 
-    public PetService(PetClient petClient) {
-        this.petClient = petClient;
+    // El 'name' debe coincidir con el del application.yml
+    @CircuitBreaker(name = "petStoreSearch", fallbackMethod = "fallbackGetPet")
+    public PetResponse getPetById(Long id) {
+        log.info("Consultando mascota con ID: {}", id);
+        return petClient.getPetById(id);
     }
 
-    public PetResponse getPetById(Long petId) {
-        // Imprimir información completa en consola
-        Object fullInfo = petClient.getPetFullInfo(petId);
-        System.out.println("Informacion completa de la API externa: " + fullInfo);
+    // El método Fallback debe tener la misma firma + la excepción
+    public PetResponse fallbackGetPet(Long id, Exception e) {
+        log.error("Circuit Breaker activado para ID {}. Razón: {}", id, e.getMessage());
 
-        // Retornar solo lo solicitado
-        return petClient.getPetById(petId);
+        return PetResponse.builder()
+                .id(id)
+                .name("Servicio externo no disponible")
+                .status("UNKNOWN")
+                .build();
     }
 
     public TransactionResponse createTransaction(PetRequest request) {

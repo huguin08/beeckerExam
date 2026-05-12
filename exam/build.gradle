@@ -19,6 +19,17 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	// --- RESILIENCIA (Punto 2) ---
+	// Resilience4j para Spring Boot 3
+	implementation 'io.github.resilience4j:resilience4j-spring-boot3:2.1.0'
+	// AOP es necesario para que funcionen las anotaciones @CircuitBreaker
+	implementation 'org.springframework.boot:spring-boot-starter-aop'
+
+	// --- DOCUMENTACIÓN (Punto 3) ---
+	// Genera Swagger UI automáticamente
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
